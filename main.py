@@ -4,14 +4,14 @@ from typing import List, Tuple
 
 
 class Person:
-    #FIXME fix def __init__(d,m,y)
+    # FIXME fix def __init__(d,m,y)
 
-    def __init__(self, n, l, day, month, year, id_):
-        self.name = n
-        self.last_name = l
-        self.day = day
-        self.month = month
+    def __init__(self, name: str, last_name: str, year: int, month: int, day: int, id_: int):
+        self.name = name
+        self.last_name = last_name
         self.year = year
+        self.month = month
+        self.day = day
         self.id = id_
     # name: str
     # last_name: str
@@ -162,14 +162,41 @@ def validate_day(birth_day: int, birth_month: int, birth_year: int) -> bool:
     return True
 
 
+def read_from_file(persons: List[Person]):
+    with open('persons.txt', 'r') as f:
+        for line in f:
+            try:
+                line = line[:-1]
+                person_data: List[str] = line.split(',')
+                person_id: int = int(person_data[0].split("=")[1])
+                person_name: str = person_data[1].split("=")[1]
+                person_lastname: str = person_data[2].split("=")[1]
+                person_full_birthday = person_data[3].split("=")[1]
+                person_year: int = int(person_full_birthday.split(".")[0])
+                person_month: int = int(person_full_birthday.split(".")[1])
+                person_day: int = int(person_full_birthday.split(".")[2])
+                p: Person = Person(person_name, person_lastname, person_year, person_month, person_day, person_id)
+                persons.append(p)
+            except IndexError:
+
+
+
+
+def save_to_file(persons: List[Person]):
+    with open('persons.txt', 'w') as f:
+        for p in persons:
+            f.write(f'Id={p.id},Name={p.name},Last name={p.last_name},birthday={p.year}.{p.month}.{p.day}\n')
+
+
 if __name__ == '__main__':
+    persons: List[Person] = []
+    read_from_file(persons)
     today = datetime.date.today()
     today_year = today.year
     today_month = today.month
     today_day = today.day
 
     helper()
-    persons: List[Person] = []
     while True:
         action = input("Your input: ")
         if action == '1':
@@ -184,11 +211,15 @@ if __name__ == '__main__':
         elif action == '5':
             print_persons(persons)
         elif action == '6':
-            person: Person|None = nearest_birthday(persons)
+            person: Person | None = nearest_birthday(persons)
             if person is not None:
                 print(
                     f'The next birthday is: {person.year}.{person.month}.{person.day} (Id = {person.id}, Name = {person.name}, Last name = {person.last_name})')
         elif action == '7':
+            # for p in persons:
+            #     saveToFile(persons)
+            # saveToFile(persons)
+            save_to_file(persons)
             exit()
         else:
             helper()
