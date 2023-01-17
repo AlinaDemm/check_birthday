@@ -4,7 +4,6 @@ from typing import List, Tuple
 
 
 class Person:
-    # FIXME fix def __init__(d,m,y)
 
     def __init__(self, name: str, last_name: str, year: int, month: int, day: int, id_: int):
         self.name = name
@@ -88,6 +87,11 @@ def update_persons_birthday(persons: List[Person]):
         print("Invalid person id")
 
 
+def recalculate_ids(persons: List[Person]):
+    for j in range(len(persons)):
+        persons[j].id = j + 1
+
+
 def delete_person(persons: List[Person]):
     try:
         person_id = int(input("Please input person's id: "))
@@ -99,8 +103,7 @@ def delete_person(persons: List[Person]):
                 break
 
         if found:
-            for j in range(len(persons)):
-                persons[j].id = j + 1
+            recalculate_ids(persons)
             print("Person was deleted")
         else:
             print(f'No person with ID= {person_id}')
@@ -163,6 +166,7 @@ def validate_day(birth_day: int, birth_month: int, birth_year: int) -> bool:
 
 
 def read_from_file(persons: List[Person]):
+    error_found: bool = False
     with open('persons.txt', 'r') as f:
         for line in f:
             try:
@@ -177,9 +181,13 @@ def read_from_file(persons: List[Person]):
                 person_day: int = int(person_full_birthday.split(".")[2])
                 p: Person = Person(person_name, person_lastname, person_year, person_month, person_day, person_id)
                 persons.append(p)
-            except IndexError:
+            except (IndexError, ValueError) as e:
+                error_found = True
+                print("ERROR!", e)
 
-
+    if error_found:
+        recalculate_ids(persons)
+        save_to_file(persons)
 
 
 def save_to_file(persons: List[Person]):
