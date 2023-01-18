@@ -28,6 +28,33 @@ def helper():
           "birthday\n[4] - Delete person\n[5] - Print all persons\n[6] - Print nearest birthday\n[7] - Exit")
 
 
+def ask_login_and_password() -> str:
+    while True:
+        try:
+            user_login: str = input("Please, input your login or print 1 to make new user: ")
+            if user_login == "1":
+                user_login: str = input("Please, create your login: ")
+                user_password: str = input("Please, create your password: ")
+                with open('users.txt', 'w') as f:
+                        f.write(f'login={user_login},password={user_password}\n')
+                try:
+                    user_file = open(f'{user_login}.txt', 'x')
+                    return user_login
+                except FileExistsError:
+                    print("Error! This login has already exist")
+            else:
+                with open('users.txt', 'r') as f:
+                    for line in f:
+                        if user_login in line:
+                            user_password: str = input("Please, input your password: ")
+                            if user_login and user_password in line:
+                                return user_login
+        except ValueError:
+            print("Invalid login or password, try again, or make new user")
+
+
+
+
 def get_persons_birthday() -> tuple[int, int, int]:
     while True:
         try:
@@ -165,9 +192,9 @@ def validate_day(birth_day: int, birth_month: int, birth_year: int) -> bool:
     return True
 
 
-def read_from_file(persons: List[Person]):
+def read_from_file(persons: List[Person], user_login):
     error_found: bool = False
-    with open('persons.txt', 'r') as f:
+    with open(f'{user_login}.txt', 'r') as f:
         for line in f:
             try:
                 line = line[:-1]
@@ -187,22 +214,24 @@ def read_from_file(persons: List[Person]):
 
     if error_found:
         recalculate_ids(persons)
-        save_to_file(persons)
+        save_to_file(persons, user_login)
 
 
-def save_to_file(persons: List[Person]):
-    with open('persons.txt', 'w') as f:
+def save_to_file(persons: List[Person], user_login):
+    with open(f'{user_login}.txt', 'w') as f:
         for p in persons:
             f.write(f'Id={p.id},Name={p.name},Last name={p.last_name},birthday={p.year}.{p.month}.{p.day}\n')
 
 
 if __name__ == '__main__':
     persons: List[Person] = []
-    read_from_file(persons)
+    user_login = ask_login_and_password()
+    read_from_file(persons, user_login)
     today = datetime.date.today()
     today_year = today.year
     today_month = today.month
     today_day = today.day
+
 
     helper()
     while True:
@@ -224,10 +253,7 @@ if __name__ == '__main__':
                 print(
                     f'The next birthday is: {person.year}.{person.month}.{person.day} (Id = {person.id}, Name = {person.name}, Last name = {person.last_name})')
         elif action == '7':
-            # for p in persons:
-            #     saveToFile(persons)
-            # saveToFile(persons)
-            save_to_file(persons)
+            save_to_file(persons, user_login)
             exit()
         else:
             helper()
