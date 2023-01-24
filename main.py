@@ -1,6 +1,7 @@
 import datetime
 from calendar import monthrange
 from typing import List, Tuple
+import hashlib
 
 
 class Person:
@@ -31,14 +32,17 @@ def helper():
 def ask_login_and_password() -> str:
     while True:
         try:
-            user_login: str = input("Please, input your login or print 1 to make new user: ")
-            if user_login == "1":
+            user_login: str = input("Please, input your login or print 1 to make new user, or 'exit' to exit: ")
+            if user_login == "exit":
+                exit()
+            elif user_login == "1":
                 user_login: str = input("Please, create your login: ")
                 user_password: str = input("Please, create your password: ")
-                with open('users.txt', 'w') as f:
-                        f.write(f'login={user_login},password={user_password}\n')
+                hash_password = hashlib.md5(user_password.encode('utf-8')).hexdigest()
+                with open('users.txt', 'a') as f:
+                        f.write(f'login={user_login},password={hash_password}\n')
                 try:
-                    user_file = open(f'{user_login}.txt', 'x')
+                    open(f'{user_login}.txt', 'x')
                     return user_login
                 except FileExistsError:
                     print("Error! This login has already exist")
