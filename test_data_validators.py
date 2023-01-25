@@ -1,7 +1,7 @@
 import os
 import pytest
 from typing import List
-from main import validate_day, validate_month, validate_year, delete_person, Person, save_to_file, read_from_file
+from main import validate_day, validate_month, validate_year, delete_person, Person, save_to_file, read_from_file, new_person
 
 
 @pytest.mark.parametrize('day,month,year,result', [(32, 12, 1997, False), (29, 2, 2022, False), (31, 5, 1998, True)])
@@ -113,3 +113,21 @@ def test_invalid_record_in_file():
         assert pe[i].month == new_persons[i].month
 
     os.remove(f'{login}.txt')
+
+
+def test_me(mocker):
+    mocker.patch(
+        'main.get_persons_birthday',
+        return_value=(1998,5,31)
+    )
+    mocker.patch(
+        'builtins.input',
+        return_value="vasily kovalev"
+    )
+    person: Person = new_person(0)
+    assert person.year == 1998
+    assert person.month == 5
+    assert person.day == 31
+    assert person.name == "vasily"
+    assert person.last_name == "kovalev"
+    assert person.id == 1

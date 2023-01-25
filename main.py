@@ -96,8 +96,7 @@ def get_persons_birthday() -> tuple[int, int, int]:
 
 
 def new_person(size: int) -> Person:
-    persons_name = input("Please, input person's name: ")
-    persons_last_name = input("Please, input person's last name: ")
+    persons_name, persons_last_name = input("Please, input your full name: ").split(" ")
     birth_year, birth_month, birth_day = get_persons_birthday()
 
     return Person(persons_name, persons_last_name, birth_year, birth_month, birth_day, size + 1)
@@ -153,9 +152,9 @@ def print_persons(persons: List[Person]) -> None:
         print(f'Id = {p.id}, Name = {p.name}, Last name = {p.last_name}, birthday = {p.year}.{p.month}.{p.day}')
 
 
-def nearest_birthday(persons: List[Person]) -> Person | None:
+def nearest_birthday(persons: List[Person]) -> Person:
     last_month = 12
-    next_birth: Person | None = None
+    next_birth: Person = None
     for i in range(len(persons)):
         if today_month > persons[i].month:
             continue
@@ -266,7 +265,7 @@ if __name__ == '__main__':
         elif action == '5':
             print_persons(persons)
         elif action == '6':
-            person: Person | None = nearest_birthday(persons)
+            person: Person = nearest_birthday(persons)
             if person is not None:
                 print(
                     f'The next birthday is: {person.year}.{person.month}.{person.day} (Id = {person.id}, Name = {person.name}, Last name = {person.last_name})')
