@@ -32,7 +32,7 @@ def helper():
 def ask_login_and_password() -> str:
     while True:
         try:
-            user_login: str = input("Please, input your login or print 1 to make new user, or 'exit' to exit: ")
+            user_login: str = input("Please, input your login, or print 1 to make new user, or 'exit' to exit: ")
             if user_login == "exit":
                 exit()
             elif user_login == "1":
@@ -51,8 +51,11 @@ def ask_login_and_password() -> str:
                     for line in f:
                         if user_login in line:
                             user_password: str = input("Please, input your password: ")
-                            if user_login and user_password in line:
+                            hash_password = hashlib.md5(user_password.encode('utf-8')).hexdigest()
+                            if user_login and hash_password in line:
                                 return user_login
+                            else:
+                                print("Invalid password!")
         except ValueError:
             print("Invalid login or password, try again, or make new user")
 
@@ -123,9 +126,9 @@ def recalculate_ids(persons: List[Person]):
         persons[j].id = j + 1
 
 
-def delete_person(persons: List[Person]):
+def delete_person(persons: List[Person], person_id: str) -> bool:
     try:
-        person_id = int(input("Please input person's id: "))
+        person_id = int(person_id)
         found: bool = False
         for i in range(len(persons)):
             if person_id == persons[i].id:
@@ -135,11 +138,11 @@ def delete_person(persons: List[Person]):
 
         if found:
             recalculate_ids(persons)
-            print("Person was deleted")
+            return True
         else:
-            print(f'No person with ID= {person_id}')
+            return False
     except ValueError:
-        print("Invalid person id")
+        return False
 
 
 def print_persons(persons: List[Person]) -> None:
@@ -248,7 +251,12 @@ if __name__ == '__main__':
         elif action == '3':
             update_persons_birthday(persons)
         elif action == '4':
-            delete_person(persons)
+            person_id = input("Please input person's id: ")
+            result: bool = delete_person(persons, person_id)
+            if result:
+                print(f'Person with ID {person_id} has been deleted')
+            else:
+                print(f'No person with ID= {person_id} or ID is invalid')
         elif action == '5':
             print_persons(persons)
         elif action == '6':
