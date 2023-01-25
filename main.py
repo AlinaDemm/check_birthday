@@ -37,15 +37,18 @@ def ask_login_and_password() -> str:
                 exit()
             elif user_login == "1":
                 user_login: str = input("Please, create your login: ")
-                user_password: str = input("Please, create your password: ")
-                hash_password = hashlib.md5(user_password.encode('utf-8')).hexdigest()
-                with open('users.txt', 'a') as f:
-                        f.write(f'login={user_login},password={hash_password}\n')
-                try:
-                    open(f'{user_login}.txt', 'x')
-                    return user_login
-                except FileExistsError:
-                    print("Error! This login has already exist")
+                if user_login != "":
+                    user_password: str = input("Please, create your password: ")
+                    if user_password != "":
+                        hash_password = hashlib.md5(user_password.encode('utf-8')).hexdigest()
+
+                        try:
+                            open(f'{user_login}.txt', 'x')
+                            with open('users.txt', 'a') as f:
+                                f.write(f'login={user_login},password={hash_password}\n')
+                            return user_login
+                        except FileExistsError:
+                            print("Error! This login has already exist")
             else:
                 with open('users.txt', 'r') as f:
                     for line in f:
@@ -152,7 +155,7 @@ def print_persons(persons: List[Person]) -> None:
 
 def nearest_birthday(persons: List[Person]) -> Person | None:
     last_month = 12
-    next_birth: Person = None
+    next_birth: Person | None = None
     for i in range(len(persons)):
         if today_month > persons[i].month:
             continue
@@ -201,27 +204,30 @@ def validate_day(birth_day: int, birth_month: int, birth_year: int) -> bool:
 
 def read_from_file(persons: List[Person], user_login):
     error_found: bool = False
-    with open(f'{user_login}.txt', 'r') as f:
-        for line in f:
-            try:
-                line = line[:-1]
-                person_data: List[str] = line.split(',')
-                person_id: int = int(person_data[0].split("=")[1])
-                person_name: str = person_data[1].split("=")[1]
-                person_lastname: str = person_data[2].split("=")[1]
-                person_full_birthday = person_data[3].split("=")[1]
-                person_year: int = int(person_full_birthday.split(".")[0])
-                person_month: int = int(person_full_birthday.split(".")[1])
-                person_day: int = int(person_full_birthday.split(".")[2])
-                p: Person = Person(person_name, person_lastname, person_year, person_month, person_day, person_id)
-                persons.append(p)
-            except (IndexError, ValueError) as e:
-                error_found = True
-                print("ERROR!", e)
+    try:
+        with open(f'{user_login}.txt', 'r') as f:
+            for line in f:
+                try:
+                    line = line[:-1]
+                    person_data: List[str] = line.split(',')
+                    person_id: int = int(person_data[0].split("=")[1])
+                    person_name: str = person_data[1].split("=")[1]
+                    person_lastname: str = person_data[2].split("=")[1]
+                    person_full_birthday = person_data[3].split("=")[1]
+                    person_year: int = int(person_full_birthday.split(".")[0])
+                    person_month: int = int(person_full_birthday.split(".")[1])
+                    person_day: int = int(person_full_birthday.split(".")[2])
+                    p: Person = Person(person_name, person_lastname, person_year, person_month, person_day, person_id)
+                    persons.append(p)
+                except (IndexError, ValueError) as e:
+                    error_found = True
+                    print("ERROR!", e)
 
-    if error_found:
-        recalculate_ids(persons)
-        save_to_file(persons, user_login)
+        if error_found:
+            recalculate_ids(persons)
+            save_to_file(persons, user_login)
+    except FileNotFoundError as e:
+        print("ERROR!", e)
 
 
 def save_to_file(persons: List[Person], user_login):
