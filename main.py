@@ -1,6 +1,6 @@
 import datetime
 from calendar import monthrange
-from typing import List, Tuple
+from typing import List
 import hashlib
 
 
@@ -13,15 +13,6 @@ class Person:
         self.month = month
         self.day = day
         self.id = id_
-    # name: str
-    # last_name: str
-    # birthday: str
-
-
-# p: Person = Person("a", "b", "c")
-# p.name = "a",
-# p.last_name = 'b'
-# p.birthday = '3'
 
 
 def helper():
@@ -63,9 +54,7 @@ def ask_login_and_password() -> str:
             print("Invalid login or password, try again, or make new user")
 
 
-
-
-def get_persons_birthday() -> tuple[int, int, int]:
+def get_persons_birthday(today_year: int) -> tuple[int, int, int]:
     while True:
         try:
             persons_birthday_input = input("Please, input person's birthday date in format 'YYYY.MM.DD': ")
@@ -95,20 +84,20 @@ def get_persons_birthday() -> tuple[int, int, int]:
             print("Invalid format. Try again")
 
 
-def new_person(size: int) -> Person:
+def new_person(size: int, today_year: int) -> Person:
     persons_name, persons_last_name = input("Please, input your full name: ").split(" ")
-    birth_year, birth_month, birth_day = get_persons_birthday()
+    birth_year, birth_month, birth_day = get_persons_birthday(today_year)
 
     return Person(persons_name, persons_last_name, birth_year, birth_month, birth_day, size + 1)
 
 
-def update_persons_birthday(persons: List[Person]):
+def update_persons_birthday(persons: List[Person], today_year: int):
     try:
         person_id = int(input("For update person's birthday date please input person's id: "))
         found: bool = False
         for i in range(len(persons)):
             if person_id == persons[i].id:
-                birth_year, birth_month, birth_day = get_persons_birthday()
+                birth_year, birth_month, birth_day = get_persons_birthday(today_year)
                 persons[i].year = birth_year
                 persons[i].month = birth_month
                 persons[i].day = birth_day
@@ -152,9 +141,9 @@ def print_persons(persons: List[Person]) -> None:
         print(f'Id = {p.id}, Name = {p.name}, Last name = {p.last_name}, birthday = {p.year}.{p.month}.{p.day}')
 
 
-def nearest_birthday(persons: List[Person]) -> Person:
+def nearest_birthday(persons: List[Person], today_month: int) -> Person:
     last_month = 12
-    next_birth: Person = None
+    next_birth: Person | None = None
     for i in range(len(persons)):
         if today_month > persons[i].month:
             continue
@@ -169,13 +158,16 @@ def nearest_birthday(persons: List[Person]) -> Person:
                 next_birth = persons[i]
 
     if next_birth is None:
-        next_birth: Person = persons[0]
-        for person in persons:
-            if person.month < next_birth.month:
-                next_birth = person
-            elif person.month == next_birth.month:
-                if person.day < next_birth.day:
+        if persons:
+            next_birth: Person = persons[0]
+            for person in persons:
+                if person.month < next_birth.month:
                     next_birth = person
+                elif person.month == next_birth.month:
+                    if person.day < next_birth.day:
+                        next_birth = person
+        else:
+            print("There no persons in the list!")
     return next_birth
 
 
@@ -235,15 +227,13 @@ def save_to_file(persons: List[Person], user_login):
             f.write(f'Id={p.id},Name={p.name},Last name={p.last_name},birthday={p.year}.{p.month}.{p.day}\n')
 
 
-if __name__ == '__main__':
+def main_loop():
     persons: List[Person] = []
     user_login = ask_login_and_password()
     read_from_file(persons, user_login)
     today = datetime.date.today()
     today_year = today.year
     today_month = today.month
-    today_day = today.day
-
 
     helper()
     while True:
@@ -251,10 +241,10 @@ if __name__ == '__main__':
         if action == '1':
             helper()
         elif action == '2':
-            p: Person = new_person(len(persons))
+            p: Person = new_person(len(persons), today_year)
             persons.append(p)
         elif action == '3':
-            update_persons_birthday(persons)
+            update_persons_birthday(persons, today_year)
         elif action == '4':
             person_id = input("Please input person's id: ")
             result: bool = delete_person(persons, person_id)
@@ -265,7 +255,7 @@ if __name__ == '__main__':
         elif action == '5':
             print_persons(persons)
         elif action == '6':
-            person: Person = nearest_birthday(persons)
+            person: Person = nearest_birthday(persons, today_month)
             if person is not None:
                 print(
                     f'The next birthday is: {person.year}.{person.month}.{person.day} (Id = {person.id}, Name = {person.name}, Last name = {person.last_name})')
@@ -274,3 +264,7 @@ if __name__ == '__main__':
             exit()
         else:
             helper()
+
+
+if __name__ == '__main__':
+    main_loop()
